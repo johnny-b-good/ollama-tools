@@ -10,5 +10,6 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "isolatedModules": true
-  }
+  },
+  "exclude": ["eslint.config.js"]
 }
