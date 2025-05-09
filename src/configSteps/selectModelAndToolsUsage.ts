@@ -4,6 +4,8 @@ import path from "node:path";
 import { select } from "@inquirer/prompts";
 import { z } from "zod";
 
+import { exit } from "../utils";
+
 const modelSchema = z.object({
   name: z.string().min(1),
   hasTools: z.boolean(),
@@ -24,21 +26,18 @@ export const selectModelAndToolsUsage = async () => {
     );
     modelsFile = await readFile(modelFilePath, "utf-8");
   } catch {
-    console.error("Can't read 'models.json' file");
-    process.exit(1);
+    return exit("error", "Can't read 'models.json' file");
   }
 
   let models: Array<Model>;
   try {
     models = modelsSchema.parse(JSON.parse(modelsFile));
   } catch {
-    console.error("Failed to parse 'models.json' file");
-    process.exit(1);
+    return exit("error", "Failed to parse 'models.json' file");
   }
 
   if (models.length === 0) {
-    console.error("No models defined");
-    process.exit(1);
+    return exit("error", "No models defined");
   }
 
   const model = await select({
@@ -47,8 +46,7 @@ export const selectModelAndToolsUsage = async () => {
   });
 
   if (!model) {
-    console.error("Model not found");
-    process.exit(1);
+    return exit("error", "Model not found");
   }
 
   let toolsEnabled = false;

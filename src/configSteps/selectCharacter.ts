@@ -4,6 +4,8 @@ import path from "node:path";
 import { select } from "@inquirer/prompts";
 import { z } from "zod";
 
+import { logger } from "../utils";
+
 const charactersSchema = z.record(z.string().min(1));
 
 type Characters = z.infer<typeof charactersSchema>;
@@ -19,7 +21,7 @@ export const selectCharacter = async () => {
     );
     charactersFile = await readFile(characterFilePath, "utf-8");
   } catch {
-    console.warn("Can't read 'characters.json' file");
+    logger.warn("Can't read 'characters.json' file");
   }
 
   let characters: Characters = {};
@@ -28,7 +30,7 @@ export const selectCharacter = async () => {
       characters = charactersSchema.parse(JSON.parse(charactersFile));
     }
   } catch {
-    console.warn("Failed to parse 'characters.json' file");
+    logger.warn("Failed to parse 'characters.json' file");
   }
 
   let characterName: string | null = null;
@@ -45,7 +47,7 @@ export const selectCharacter = async () => {
 
     characterSystemPrompt = characterName ? characters[characterName] : null;
   } else {
-    console.log("Using default system prompt");
+    logger.info("Using default system prompt");
   }
 
   return { characterName, characterSystemPrompt };

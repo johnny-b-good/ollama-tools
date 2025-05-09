@@ -5,6 +5,7 @@ import chalk from "chalk";
 
 import { allTools, availableFunctions } from "./aiTools";
 import { selectCharacter, selectModelAndToolsUsage } from "./configSteps";
+import { logger, exit, writeResponseStream } from "./utils";
 
 const main = async () => {
   const messages: Message[] = [];
@@ -32,9 +33,7 @@ const main = async () => {
     try {
       prompt = await rl.question(chalk.blue("[User]: "));
     } catch {
-      console.log("Exiting");
-      ollama.abort();
-      process.exit(1);
+      return exit("normal", "Exiting");
     }
 
     messages.push({
@@ -49,31 +48,28 @@ const main = async () => {
         messages,
       });
 
-      let responseText = "";
-      process.stdout.write(chalk.red(`[${characterDisplayName}]: `));
-      for await (const chunk of response) {
-        process.stdout.write(chunk.message.content);
-        responseText += chunk.message.content;
-      }
+      const responseText = await writeResponseStream(
+        characterDisplayName,
+        response,
+      );
 
       messages.push({
         role: "assistant",
         content: responseText,
       });
-
-      console.log("\n");
     } else {
+      logger.info("Running tools");
       const response = await ollama.chat({
         model: modelName,
         messages,
         tools: allTools,
       });
 
-      const responseText = response.message.content;
       const toolCalls = response.message.tool_calls;
       messages.push(response.message);
-      console.log("Response:", responseText);
-      console.log("Tool calls:", toolCalls);
+
+      // TODO: Remove me
+      logger.info(response, "Response");
 
       if (toolCalls) {
         for (const toolCall of toolCalls) {
@@ -85,23 +81,25 @@ const main = async () => {
               content: output.toString(),
             });
           } else {
-            console.log("Function", toolCall.function.name, "not found");
+            logger.info("Function", toolCall.function.name, "not found");
           }
         }
 
         const finalResponse = await ollama.chat({
           model: modelName,
           messages: messages,
+          stream: true,
         });
 
-        const finalResponseText = finalResponse.message.content;
+        const finalResponseText = await writeResponseStream(
+          characterDisplayName,
+          finalResponse,
+        );
 
         messages.push({
           role: "assistant",
           content: finalResponseText,
         });
-
-        console.log(finalResponseText);
       } else {
         console.log("No tool calls");
       }
@@ -109,11 +107,6 @@ const main = async () => {
   }
 };
 
-main()
-  .catch((error) => {
-    console.error("Error:", error);
-    ollama.abort();
-  })
-  .finally(() => {
-    console.log("Exiting");
-  });
+main().catch((error) => {
+  exit("error", error.toString());
+});
