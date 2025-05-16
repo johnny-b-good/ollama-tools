@@ -15,6 +15,8 @@ const modelsSchema = z.array(modelSchema);
 
 type Model = z.infer<typeof modelSchema>;
 
+type SystemMode = "chat" | "tools";
+
 export const selectModelAndToolsUsage = async () => {
   let modelsFile: string;
   try {
@@ -49,16 +51,16 @@ export const selectModelAndToolsUsage = async () => {
     return exit("error", "Model not found");
   }
 
-  let toolsEnabled = false;
+  let mode: SystemMode = "chat";
   if (model.hasTools) {
-    toolsEnabled = await select({
-      message: "Tools",
+    mode = await select<SystemMode>({
+      message: "Select mode",
       choices: [
-        { name: "Disabled", value: false },
-        { name: "Enabled", value: true },
+        { name: "Chat", value: "chat" },
+        { name: "Tools", value: "tools" },
       ],
     });
   }
 
-  return { modelName: model.name, toolsEnabled };
+  return { modelName: model.name, mode };
 };
