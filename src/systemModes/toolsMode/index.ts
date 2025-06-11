@@ -3,8 +3,8 @@ import readline from "node:readline/promises";
 import ollama, { type Message } from "ollama";
 import chalk from "chalk";
 
-import { exit, writeResponseStream, logger } from "../utils";
-import { allTools, availableFunctions } from "../aiTools";
+import { exit, writeResponseStream, logger } from "../../utils";
+import { allTools, availableFunctions } from "../../aiTools";
 
 export const runToolsMode = async ({
   messages,
