@@ -8,10 +8,12 @@ import { exit, writeResponseStream } from "../utils";
 export const runChatMode = async ({
   messages,
   modelName,
+  modelReasoning,
   characterDisplayName,
 }: {
   messages: Message[];
   modelName: string;
+  modelReasoning: boolean;
   characterDisplayName: string;
 }) => {
   const rl = readline.createInterface({
@@ -36,6 +38,7 @@ export const runChatMode = async ({
       model: modelName,
       stream: true,
       messages,
+      think: modelReasoning,
     });
 
     const responseText = await writeResponseStream(

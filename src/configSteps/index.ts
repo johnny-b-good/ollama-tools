@@ -1,2 +1,2 @@
 export * from "./selectCharacter";
-export * from "./selectModelAndMode";
+export * from "./selectModelWithSettings";
