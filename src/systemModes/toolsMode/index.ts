@@ -1,29 +1,20 @@
-import readline from "node:readline/promises";
-
-import ollama, { type Message } from "ollama";
+import ollama from "ollama";
 import chalk from "chalk";
+import { input } from "@inquirer/prompts";
 
 import { exit, writeResponseStream, logger } from "../../utils";
 import { allTools, availableFunctions } from "../../aiTools";
+import { type SystemState } from "../../types";
 
 export const runToolsMode = async ({
   messages,
   modelName,
   characterDisplayName,
-}: {
-  messages: Message[];
-  modelName: string;
-  characterDisplayName: string;
-}) => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
+}: SystemState) => {
   while (true) {
     let prompt = "";
     try {
-      prompt = await rl.question(chalk.blue("[User]: "));
+      prompt = await input({ message: chalk.blue("[User]:") });
     } catch {
       return exit("normal", "Exiting");
     }
