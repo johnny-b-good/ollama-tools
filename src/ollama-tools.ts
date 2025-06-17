@@ -3,6 +3,7 @@ import { type Message } from "ollama";
 import { selectCharacter, selectModelWithSettings } from "./configSteps";
 import { exit } from "./utils";
 import { runChatMode, runToolsMode } from "./systemModes";
+import { SystemState } from "./types";
 
 const main = async () => {
   const messages: Message[] = [];
@@ -14,6 +15,16 @@ const main = async () => {
 
   const characterDisplayName = characterName ?? modelName;
 
+  const systemState: SystemState = {
+    modelName,
+    systemMode,
+    modelReasoning,
+    characterName,
+    characterSystemPrompt,
+    characterDisplayName,
+    messages,
+  };
+
   if (characterSystemPrompt) {
     messages.push({
       role: "system",
@@ -22,14 +33,9 @@ const main = async () => {
   }
 
   if (systemMode === "chat") {
-    await runChatMode({
-      messages,
-      modelName,
-      modelReasoning,
-      characterDisplayName,
-    });
+    await runChatMode(systemState);
   } else if (systemMode === "tools") {
-    await runToolsMode({ messages, modelName, characterDisplayName });
+    await runToolsMode(systemState);
   }
 };
 

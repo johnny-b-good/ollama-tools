@@ -5,6 +5,7 @@ import { select } from "@inquirer/prompts";
 import { z } from "zod";
 
 import { exit } from "../utils";
+import { SystemMode } from "../types/SystemMode";
 
 const modelSchema = z.object({
   name: z.string().min(1),
@@ -15,8 +16,6 @@ const modelSchema = z.object({
 const modelsSchema = z.array(modelSchema);
 
 type Model = z.infer<typeof modelSchema>;
-
-type SystemMode = "chat" | "tools";
 
 export const selectModelWithSettings = async () => {
   let modelsFile: string;
@@ -43,7 +42,7 @@ export const selectModelWithSettings = async () => {
     return exit("error", "No models defined");
   }
 
-  const model = await select({
+  const model = await select<Model>({
     message: "Select a model",
     choices: models.map((model) => ({ name: model.name, value: model })),
   });
